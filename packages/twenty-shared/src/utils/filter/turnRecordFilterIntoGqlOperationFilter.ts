@@ -630,14 +630,22 @@ const buildDirectFieldGqlOperationFilter = ({
             } as RatingFilter,
           };
         case RecordFilterOperand.IS_NOT:
+          // NOT (x = v) is NULL for empty x in SQL, so empty values are matched explicitly
           return {
-            not: {
-              [fieldMetadataItem.name]: {
-                eq: convertRatingToRatingValue(
-                  parseNumericFilterValue(recordFilter.value),
-                ),
-              } as RatingFilter,
-            },
+            or: [
+              {
+                not: {
+                  [fieldMetadataItem.name]: {
+                    eq: convertRatingToRatingValue(
+                      parseNumericFilterValue(recordFilter.value),
+                    ),
+                  } as RatingFilter,
+                },
+              },
+              {
+                [fieldMetadataItem.name]: { is: 'NULL' } as RatingFilter,
+              },
+            ],
           };
         case RecordFilterOperand.GREATER_THAN_OR_EQUAL:
           return {
@@ -681,12 +689,20 @@ const buildDirectFieldGqlOperationFilter = ({
             } as FloatFilter,
           };
         case RecordFilterOperand.IS_NOT:
+          // NOT (x = v) is NULL for empty x in SQL, so empty values are matched explicitly
           return {
-            not: {
-              [fieldMetadataItem.name]: {
-                eq: parseNumericFilterValue(recordFilter.value),
-              } as FloatFilter,
-            },
+            or: [
+              {
+                not: {
+                  [fieldMetadataItem.name]: {
+                    eq: parseNumericFilterValue(recordFilter.value),
+                  } as FloatFilter,
+                },
+              },
+              {
+                [fieldMetadataItem.name]: { is: 'NULL' } as FloatFilter,
+              },
+            ],
           };
         default:
           throw new Error(
